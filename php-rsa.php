@@ -21,8 +21,8 @@ $bodyData = [
 // Função para assinar dados usando uma chave privada
 function signData($data, $privateKey) {
     // Converter os dados para uma string JSON
-    $dataString = json_encode($data);
-
+    $dataString = json_encode($data, JSON_UNESCAPED_SLASHES);
+    echo $dataString;
     // Criar um recurso de chave privada
     $privateKeyResource = openssl_pkey_get_private($privateKey);
     if (!$privateKeyResource) {
@@ -34,20 +34,18 @@ function signData($data, $privateKey) {
     if (!openssl_sign($dataString, $signature, $privateKeyResource, OPENSSL_ALGO_SHA256)) {
         throw new Exception('Falha ao assinar os dados');
     }
+    // echo $signature;
 
     // Codificar a assinatura em base64
     $encodedSignature = base64_encode($signature);
-
-    // Liberar o recurso da chave privada
-    openssl_free_key($privateKeyResource);
-
+    echo $encodedSignature;
     return $encodedSignature;
 }
 
 // Função para verificar a assinatura usando uma chave pública
 function verifySignature($data, $signature, $publicKey) {
     // Converter os dados para uma string JSON
-    $dataString = json_encode($data);
+    $dataString = json_encode($data, JSON_UNESCAPED_SLASHES);
 
     // Criar um recurso de chave pública
     $publicKeyResource = openssl_pkey_get_public($publicKey);
@@ -58,9 +56,6 @@ function verifySignature($data, $signature, $publicKey) {
     // Verificar a assinatura usando a chave pública
     $decodedSignature = base64_decode($signature);
     $isVerified = openssl_verify($dataString, $decodedSignature, $publicKeyResource, OPENSSL_ALGO_SHA256);
-
-    // Liberar o recurso da chave pública
-    openssl_free_key($publicKeyResource);
 
     return $isVerified === 1;
 }
